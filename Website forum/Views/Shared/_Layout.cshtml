@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="referrer" content="strict-origin" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Website_forum</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header class="container d-flex justify-content-between">
+        <nav class="navbar navbar-expand container">
+            <a class="h3 text-decoration-none mr-5" asp-area="" asp-controller="Home" asp-action="Index">Website forum</a>
+
+            @if (!@User.Identity.IsAuthenticated)
+            {
+                <div class="collapse navbar-collapse">
+                    <div class="navbar-nav">
+                        <a class="nav-link active" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+
+                    </div>
+                </div>
+            }
+        </nav>
+
+        @if (@User.Identity.IsAuthenticated)
+        {
+            <div class="d-flex">
+
+                @* <div class="dropdown m-2">
+                                    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                                        My Settings
+                                    </a>
+                                   <ul class="dropdown-menu bg-secondary" aria-labelledby="dropdownMenuLink">
+                        <li><a class="nav-link text-white btn-secondary" method="get" asp-area="" asp-controller="User" asp-route-id="@User.Identity.Name" asp-action="EditUser">Edit data</a></li>
+                        <li><a class="nav-link text-white btn-secondary" method="get" asp-area="" asp-controller="User" asp-route-id="@User.Identity.Name" asp-action="ChangePassword">Edit password</a></li>
+                                    </ul
+                    </div>>*@
+
+
+
+                <div class="h4 flex-nowrap">Welcome, @User.Identity.Name</div>
+                <a class="btn btn-outline-danger" asp-area="" asp-controller="Account" asp-action="Logout">Logout</a>
+            </div>
+        }
+
+
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2021 - Website_forum - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://kit.fontawesome.com/575a184d36.js" crossorigin="anonymous"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

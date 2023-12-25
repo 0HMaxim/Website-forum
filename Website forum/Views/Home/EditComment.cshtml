@@ -1,0 +1,22 @@
+﻿@model Website_forum.Models.Comment
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<form asp-action="EditComment" asp-controller="Home" asp-antiforgery="true">
+    <input type="hidden" value="@Model.Id" name="Comment.Id" />
+    <input type="hidden" value="@Model.Post.PostDate" name="Comment.Post.PostDate" />
+    <input type="hidden" value="@Model.Post.Title" name="Comment.Post.Title" />
+    <input type="hidden" value="@Model.Post.Id" name="Comment.Post.Id" />
+    <input type="hidden" value="@Model.Post.Topic.Id" name="Comment.Post.Topic.Id" />
+    <input type="hidden" value="@Model.Post.Question" name="Comment.Post.Question" />
+    <input type="hidden" value="@Model.Post.Topic.Name" name="Comment.Post.Topic.Name" />
+    <input type="hidden" value="@Model.User.Id" name="Comment.User.Id" />
+
+
+    <div class="form-label">Edit Comment</div>
+    @Html.TextArea("Comment.Text", @Model.Text, new { @class = "form-control w-75" })
+
+
+    <button type="submit" class="btn btn-outline-primary mt-3">Save</button>
+</form>

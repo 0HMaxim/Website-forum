@@ -1,0 +1,67 @@
+﻿@model Website_forum.Models.ViewModels.CommentsPostViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div asp-validation-summary="All"></div>
+
+<div class="container clearfix">
+    <div>
+        <div class="display-6 font-weight-bold">@Model.Post.Title</div>
+        <div class="display-6">@Model.Post.Topic.Name</div>
+        <span>Question asked @Model.Post.PostDate</span>
+    </div>
+
+    <hr />
+
+    <div>
+        <div class="display-4">Question: </div>
+        <p class="text-warning" style="font-size:25px;">
+            @Model.Post.Question
+        </p>
+    </div>
+
+
+    <div>
+
+        @foreach (var comment in Model.Post.Comments)
+        {
+
+            <div class="card text-white bg-primary mb-3 w-75 " style="box-shadow: 10px 5px 5px black;">
+                <div class="card-header d-flex justify-content-between">
+                    <div>User: @comment.User.UserName</div>
+                    @if (@User.Identity.Name == @comment.User.UserName)
+                    {
+                        <a asp-action="EditComment" asp-controller="Home" asp-route-id="@comment.Id" class="btn"><i class="fas fa-edit"></i></a>
+                    }
+                </div>
+                <div class="card-body">
+                    <p class="card-text">@comment.Text</p>
+                </div>
+            </div>
+
+        }
+
+    </div>
+
+    <div>
+        <form asp-action="OpenPost" asp-route-id="@Model.Post.Id" asp-controller="Home" asp-antiforgery="true">
+            <input type="hidden" value="@Model.Post.Id" name="Post.Id" />
+            <input type="hidden" value="@Model.Post.Title" name="Post.Title" />
+            <input type="hidden" value="@Model.Post.Question" name="Post.Question" />
+            <input type="hidden" value="@Model.Post.Topic.Name" name="Post.Topic.Name" />
+            <input type="hidden" value="@Model.Post.Topic.Id" name="Post.Topic.Id" />
+            <input type="hidden" value="@Model.Post.PostDate" name="Post.PostDate" />
+
+            <div class="form-label">Your answer</div>
+            @Html.TextArea("Answer", @Model.Answer, new { @class = "form-control w-75" })
+
+
+            <button type="submit" class="btn btn-outline-primary mt-3">Send answer</button>
+        </form>
+    </div>
+
+
+
+
+</div>
+

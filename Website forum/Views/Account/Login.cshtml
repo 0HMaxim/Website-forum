@@ -1,0 +1,29 @@
+﻿@model Website_forum.Models.ViewModels.LoginViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Login</h1>
+<a asp-controller="Account" asp-action="Register" class="btn btn-primary mb-4">Register</a>
+
+<form asp-action="Login" asp-controller="Account" asp-antiforgery="true" asp-route-returnUrl="@Model.ReturnUrl">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <div>
+            @Html.LabelFor(x => x.Login, null, new { @class = "form-label" })
+            @Html.TextBoxFor(x => x.Login, null, new { @class = "form-control" })
+            @Html.ValidationMessageFor(x => x.Login, null, new { @class = "text-danger m-2" })
+        </div>
+        <div>
+            @Html.LabelFor(x => x.Password, null, new { @class = "form-label" })
+            @Html.PasswordFor(x => x.Password, new { @class = "form-control" })
+            @Html.ValidationMessageFor(x => x.Password, null, new { @class = "text-danger m-2" })
+        </div>
+        <div>
+            @Html.LabelFor(x => x.RememberMe, new { @class = "form-label mr-4" })
+            @Html.CheckBoxFor(x => x.RememberMe, new { @class = "form-check-input", @type = "checkbox" })
+        </div>
+        <input type="submit" value="Login" class="btn btn-warning" />
+    </div>
+
+</form>

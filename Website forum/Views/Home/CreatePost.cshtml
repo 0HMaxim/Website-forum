@@ -1,0 +1,60 @@
+﻿@model Website_forum.Models.Post
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="d-flex justify-content-between">
+
+    <div class="h1">
+        Create Post @if (@Model.Topic != null)
+        {
+            <label>for</label>
+            <label class="rounded p-2 bg-primary text-white">@Model.Topic.Name</label>
+        }
+    </div>
+
+    <label class="h1">@Model.PostDate</label>
+</div>
+
+@if (@ViewBag.Topics.Count == 0)
+{
+    <h1 class="text-center text-danger">Need create Topic</h1>
+}
+else
+{
+    <form asp-action="CreatePost" asp-controller="Home" asp-antiforgery="true">
+        <div asp-validation-summary="All"></div>
+        <input type="hidden" name="PostDate" value="@Model.PostDate" />
+        @if (@Model.Topic != null)
+        {
+            <input type="hidden" name="Topic.Name" value="@Model.Topic.Name" />
+        }
+       
+
+        @if (@Model.Topic == null)
+        {
+            @Html.DropDownList("Topic.Id", new SelectList(ViewBag.Topics, "Id", "Name", Model.Topic), "-- Make Selection --")
+        }
+        else
+        {
+            @Html.DropDownList("Topic.Id", new SelectList(ViewBag.Topics, "Id", "Name", Model.Topic), @Model.Topic.Name)
+        }
+
+        <div>
+            <div>
+                @Html.LabelFor(x => x.Title, null, new { @class = "form-label" })
+                @Html.TextBoxFor(x => x.Title, null, new { @class = "form-control" })
+                @Html.ValidationMessageFor(x => x.Title, null, new { @class = "text-danger m-2" })
+            </div>
+            <div>
+                @Html.LabelFor(x => x.Question, null, new { @class = "form-label" })
+                @Html.TextAreaFor(x => x.Question, new { @class = "form-control" })
+                @Html.ValidationMessageFor(x => x.Question, null, new { @class = "text-danger m-2" })
+            </div>
+
+            <input type="submit" value="Submit question" class="btn btn-primary" />
+        </div>
+
+    </form>
+}

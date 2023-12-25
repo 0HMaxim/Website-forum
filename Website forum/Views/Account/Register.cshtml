@@ -1,0 +1,35 @@
+﻿@model Website_forum.Models.ViewModels.RegisterViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Register</h1>
+<form asp-action="Register" asp-controller="Account" asp-antiforgery="true">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <div>
+            @Html.LabelFor(x => x.User.UserName, null, new { @class = "form-label" })
+            @Html.TextBoxFor(x => x.User.UserName, null, new { @class = "form-control" })
+            @Html.ValidationMessageFor(x => x.User.UserName, null, new { @class = "text-danger m-2" })
+        </div>
+
+        <div>
+            @Html.LabelFor(x => x.User.Email, null, new { @class = "form-label" })
+            @Html.TextBoxFor(x => x.User.Email, null, new { @class = "form-control" })
+            @Html.ValidationMessageFor(x => x.User.Email, null, new { @class = "text-danger m-2" })
+        </div>
+
+        <div>
+            @Html.LabelFor(x => x.Password, null, new { @class = "form-label" })
+            @Html.PasswordFor(x => x.Password, new { @class = "form-control" })
+            @Html.ValidationMessageFor(x => x.Password, null, new { @class = "text-danger m-2" })
+        </div>
+        <div>
+            @Html.LabelFor(x => x.ConfirmPassword, null, new { @class = "form-label" })
+            @Html.PasswordFor(x => x.ConfirmPassword, new { @class = "form-control" })
+            @Html.ValidationMessageFor(x => x.ConfirmPassword, null, new { @class = "text-danger m-2" })
+        </div>
+        <input type="submit" value="Registration" class="btn btn-warning" />
+    </div>
+
+</form>

@@ -1,0 +1,71 @@
+﻿@model Website_forum.Models.ViewModels.ListPostViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (@Model.Topic != null)
+{
+    <h1>List Post for <label class="rounded p-2 bg-primary text-white">@Model.Topic.Name</label></h1>
+}
+else
+{
+    <h1>All Posts</h1>
+}
+
+<div class="container d-flex justify-content-between">
+
+    @if (Model.Posts.Count() == 0)
+    {
+        <div class="display-4">No any Posts</div>
+    }
+    else
+    {
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Answers</th>
+            <th>Post Date</th>
+            <th>Topic</th>
+        </tr>
+    </thead>
+
+    @foreach (var post in Model.Posts)
+    {
+<tr>
+    <td>@post.Title</td>
+    <td>@post.Comments.Count</td>
+    <td>@post.PostDate</td>
+    <td class="text-warning">@post.Topic.Name</td>
+    <td>
+        <a asp-controller="Home" asp-action="OpenPost" asp-route-id="@post.Id" class="btn btn-outline-info">Show post</a>
+    </td>
+
+    @if (@User.Identity.Name == post.Owner.UserName)
+    {
+        <td>
+            <form action="~/Home/Delete" method="post">
+                @Html.Hidden("returnUrl", Context.Request.Path)
+                <input type="hidden" value="@post.Id" name="id" />
+                <input type="submit" value="Delete" class="btn btn-danger" />
+            </form>
+        </td>
+        
+    }
+
+</tr>
+    }
+</table>
+    }
+
+    @if (@Model.Topic != null)
+    {
+        <a class="btn btn-warning font-weight-bold h-50" asp-controller="Home" asp-action="CreatePost" asp-route-id="@Model.Topic.Id">Ask a question</a>
+    }
+    else
+    {
+        <a class="btn btn-warning font-weight-bold h-50" asp-controller="Home" asp-action="CreatePost">Ask a question</a>
+    }
+</div>
+
+
