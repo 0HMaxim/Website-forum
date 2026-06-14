@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -54,7 +53,7 @@ namespace Website_forum.Controllers
             return View(new ListPostViewModel
             {
                 Posts = context.Posts
-                                  .OrderBy(x=>x.PostDate)
+                                  .OrderBy(x => x.PostDate)
                                      .ToList(),
             });
         }
@@ -87,38 +86,49 @@ namespace Website_forum.Controllers
         [HttpPost]
         public IActionResult CreatePost(Post post)
         {
-           
-            post.Topic = context.Topic.FirstOrDefault(x => x.Id == post.Topic.Id);
-            if (ModelState.IsValid)
+            if (post.Topic != null)
             {
                 post.Topic = context.Topic.FirstOrDefault(x => x.Id == post.Topic.Id);
+            }
+
+            if (ModelState.IsValid && post.Topic != null)
+            {
                 post.Owner = userManager.FindByNameAsync(HttpContext.User.Identity.Name).Result;
                 context.Posts.Add(post);
                 context.SaveChanges();
                 return RedirectToAction("ListPosts", new { id = post.Topic.Id });
             }
-       
+
+            if (post.Topic == null)
+            {
+                ModelState.AddModelError("", "Please select a topic");
+            }
             ViewBag.Topics = context.Topic.ToList();
             return View(post);
         }
 
         public IActionResult OpenPost(int? id)
         {
-            context.Topic.Load();
-            context.Comments.Load();
-            context.Users.Load();
-            var post = context.Posts.FirstOrDefault(x => x.Id == id);
-            var topic = context.Topic.FirstOrDefault(x => x.Id == post.Topic.Id);
+            var post = context.Posts
+                .Include(p => p.Topic)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .FirstOrDefault(x => x.Id == id);
+
+            if (post == null)
+            {
+                return RedirectToAction("Topics");
+            }
+
             return View(new CommentsPostViewModel { Post = post });
         }
-        
+
 
         [HttpPost]
         public async Task<IActionResult> OpenPost(CommentsPostViewModel model)
         {
             context.Comments.Load();
-            context.Topic.Load();
-            var post = context.Posts.FirstOrDefault(x => x.Id == model.Post.Id);
+            var post = context.Posts.Include(p => p.Topic).FirstOrDefault(x => x.Id == model.Post.Id);
             var user = await userManager.FindByNameAsync(HttpContext.User.Identity.Name);
             if (ModelState.IsValid)
             {
@@ -126,7 +136,7 @@ namespace Website_forum.Controllers
                 post.Comments.Add(comment);
                 context.Update(post);
                 context.SaveChanges();
-                return RedirectToAction("OpenPost", new { id = post.Topic.Id });
+                return RedirectToAction("OpenPost", new { id = post.Id });
             }
             ViewBag.Topics = context.Topic.ToList();
             return View(model);
@@ -163,9 +173,25 @@ namespace Website_forum.Controllers
         [HttpPost]
         public IActionResult Delete(int id, string returnUrl)
         {
-            var postToDelete = context.Posts.Find(id);
-            context.Posts.Remove(postToDelete);
-            context.SaveChanges();
+            var postToDelete = context.Posts.Include(p => p.Comments).FirstOrDefault(x => x.Id == id);
+            if (postToDelete != null)
+            {
+                context.Comments.RemoveRange(postToDelete.Comments);
+                context.Posts.Remove(postToDelete);
+                context.SaveChanges();
+            }
+            return Redirect(returnUrl);
+        }
+
+        [HttpPost]
+        public IActionResult DeleteComment(int id, string returnUrl)
+        {
+            var comment = context.Comments.Include(c => c.User).FirstOrDefault(x => x.Id == id);
+            if (comment != null && comment.User != null && comment.User.UserName == HttpContext.User.Identity.Name)
+            {
+                context.Comments.Remove(comment);
+                context.SaveChanges();
+            }
             return Redirect(returnUrl);
         }
 

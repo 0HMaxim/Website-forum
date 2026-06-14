@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,10 +15,12 @@ namespace Website_forum.Controllers
     {
         private readonly Microsoft.AspNetCore.Identity.UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
-        public AccountController(Microsoft.AspNetCore.Identity.UserManager<User> userManager, SignInManager<User> signInManager)
+        private readonly EmailService emailService;
+        public AccountController(Microsoft.AspNetCore.Identity.UserManager<User> userManager, SignInManager<User> signInManager, EmailService emailService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.emailService = emailService;
         }
 
         public IActionResult Login(string returnUrl = null)
@@ -41,10 +42,10 @@ namespace Website_forum.Controllers
                 var user = await userManager.FindByNameAsync(model.Login);
                 if (user != null)
                 {
-                    // проверяем, подтвержден ли email
+                    // check if email is confirmed
                     if (!await userManager.IsEmailConfirmedAsync(user))
                     {
-                        ModelState.AddModelError(string.Empty, "Вы не подтвердили свой email");
+                        ModelState.AddModelError(string.Empty, "You have not confirmed your email");
                         return View(model);
                     }
                 }
@@ -56,7 +57,7 @@ namespace Website_forum.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Неправильный логин и (или) пароль");
+                    ModelState.AddModelError("", "Incorrect login and/or password");
                 }
             }
             return View(model);
@@ -74,17 +75,16 @@ namespace Website_forum.Controllers
                 if (result.Succeeded)
                 {
                     var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                    // создаем ссылку для подтверждения
+                    // create confirmation link
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code },
                                protocol: Request.Scheme);
-                    // отправка письма
-                    EmailService emailService = new EmailService();
-                    await emailService.SendAsync(new IdentityMessage { Destination = user.Email,
-                        Subject="Подтверждение электронной почты",
-                        Body="Для завершения регистрации перейдите по ссылке:: <a href=\""
-                        + callbackUrl + "\">завершить регистрацию</a>"});
+                    // send email
+                    await emailService.SendAsync(new EmailMessage { Destination = user.Email,
+                        Subject="Email Confirmation",
+                        Body="To complete registration, follow this link: <a href=\""
+                        + callbackUrl + "\">complete registration</a>"});
 
-                    return Content("Для завершения регистрации проверьте электронную почту и перейдите по ссылке, указанной в письме");
+                    return Content("To complete registration, check your email and follow the link provided in the message");
                 }
                 else
                 {

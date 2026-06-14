@@ -15,7 +15,7 @@
 
     <div>
         <div class="display-4">Question: </div>
-        <p class="text-warning" style="font-size:25px;">
+        <p class="text-warning" style="font-size:25px; white-space: pre-wrap;">
             @Model.Post.Question
         </p>
     </div>
@@ -28,14 +28,21 @@
 
             <div class="card text-white bg-primary mb-3 w-75 " style="box-shadow: 10px 5px 5px black;">
                 <div class="card-header d-flex justify-content-between">
-                    <div>User: @comment.User.UserName</div>
-                    @if (@User.Identity.Name == @comment.User.UserName)
+                    <div>User: @(comment.User != null ? comment.User.UserName : "Unknown")</div>
+                    @if (comment.User != null && @User.Identity.Name == @comment.User.UserName)
                     {
-                        <a asp-action="EditComment" asp-controller="Home" asp-route-id="@comment.Id" class="btn"><i class="fas fa-edit"></i></a>
+                        <div>
+                            <a asp-action="EditComment" asp-controller="Home" asp-route-id="@comment.Id" class="btn"><i class="fas fa-edit"></i></a>
+                            <form asp-action="DeleteComment" asp-controller="Home" method="post" class="d-inline" asp-antiforgery="true">
+                                <input type="hidden" name="id" value="@comment.Id" />
+                                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                                <button type="submit" class="btn" onclick="return confirm('Delete this comment?');"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
                     }
                 </div>
                 <div class="card-body">
-                    <p class="card-text">@comment.Text</p>
+                    <p class="card-text" style="white-space: pre-wrap;">@comment.Text</p>
                 </div>
             </div>
 

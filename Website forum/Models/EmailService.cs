@@ -1,35 +1,46 @@
-﻿using Microsoft.AspNet.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Configuration;
+using MimeKit;
 using System.Threading.Tasks;
 
 namespace Website_forum.Models
 {
-    public class EmailService : IIdentityMessageService
+    public class EmailMessage
     {
-        public Task SendAsync(IdentityMessage message)
+        public string Destination { get; set; }
+        public string Subject { get; set; }
+        public string Body { get; set; }
+    }
+
+    public class EmailService
+    {
+        private readonly IConfiguration configuration;
+
+        public EmailService(IConfiguration configuration)
         {
-            // настройка логина, пароля отправителя
-            var from = "teran5656@gmail.com";
-            var pass = "ssoywqglvgtlkrlr";
+            this.configuration = configuration;
+        }
 
-            // адрес и порт smtp-сервера, с которого мы и будем отправлять письмо
-            SmtpClient client = new SmtpClient("smtp.gmail.com", 587);
+        public async Task SendAsync(EmailMessage message)
+        {
+            var smtpSection = configuration.GetSection("Smtp");
+            var host = smtpSection["Host"];
+            var port = int.Parse(smtpSection["Port"] ?? "587");
+            var from = smtpSection["User"];
+            var pass = smtpSection["Password"];
 
-            client.DeliveryMethod = SmtpDeliveryMethod.Network;
-            client.UseDefaultCredentials = false;
-            client.Credentials = new System.Net.NetworkCredential(from, pass);
-            client.EnableSsl = true;
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(from));
+            email.To.Add(MailboxAddress.Parse(message.Destination));
+            email.Subject = message.Subject;
+            email.Body = new TextPart("html") { Text = message.Body };
 
-            // создаем письмо: message.Destination - адрес получателя
-            var mail = new MailMessage(from, message.Destination);
-            mail.Subject = message.Subject;
-            mail.Body = message.Body;
-            mail.IsBodyHtml = true;
-
-            return client.SendMailAsync(mail);
+            using var client = new SmtpClient();
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(from, pass);
+            await client.SendAsync(email);
+            await client.DisconnectAsync(true);
         }
     }
 }

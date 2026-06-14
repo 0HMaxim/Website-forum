@@ -40,6 +40,8 @@ namespace Website_forum
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+                    webBuilder.UseUrls($"http://0.0.0.0:{port}");
                     webBuilder.UseStartup<Startup>();
                 });
     }

@@ -28,12 +28,12 @@ namespace Website_forum
         public void ConfigureServices(IServiceCollection services)
         {
             string connectionToIdentityDb = Configuration.GetConnectionString("ConnectionStringToIdentityDb");
-            services.AddDbContext<IdentityDbContext>(options => options.UseSqlServer(connectionToIdentityDb));
+            services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(connectionToIdentityDb));
 
 
             services.AddScoped<IdentityDbContext>();
 
-            
+
 
             services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>()
@@ -42,6 +42,7 @@ namespace Website_forum
 
             services.AddControllersWithViews();
             services.AddSession();
+            services.AddScoped<EmailService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,10 +55,7 @@ namespace Website_forum
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
             }
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseSession();

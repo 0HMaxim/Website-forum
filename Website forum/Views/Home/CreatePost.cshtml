@@ -26,19 +26,14 @@ else
     <form asp-action="CreatePost" asp-controller="Home" asp-antiforgery="true">
         <div asp-validation-summary="All"></div>
         <input type="hidden" name="PostDate" value="@Model.PostDate" />
-        @if (@Model.Topic != null)
-        {
-            <input type="hidden" name="Topic.Name" value="@Model.Topic.Name" />
-        }
-       
 
         @if (@Model.Topic == null)
         {
-            @Html.DropDownList("Topic.Id", new SelectList(ViewBag.Topics, "Id", "Name", Model.Topic), "-- Make Selection --")
+            @Html.DropDownList("Topic.Id", new SelectList(ViewBag.Topics, "Id", "Name"), "-- Make Selection --")
         }
         else
         {
-            @Html.DropDownList("Topic.Id", new SelectList(ViewBag.Topics, "Id", "Name", Model.Topic), @Model.Topic.Name)
+            @Html.DropDownList("Topic.Id", new SelectList(ViewBag.Topics, "Id", "Name", Model.Topic.Id))
         }
 
         <div>
