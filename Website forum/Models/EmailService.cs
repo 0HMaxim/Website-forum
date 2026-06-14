@@ -26,7 +26,7 @@ namespace Website_forum.Models
         {
             var smtpSection = configuration.GetSection("Smtp");
             var host = smtpSection["Host"];
-            var port = int.Parse(smtpSection["Port"] ?? "587");
+            var port = int.Parse(smtpSection["Port"] ?? "465");
             var from = smtpSection["User"];
             var pass = smtpSection["Password"];
 
@@ -37,7 +37,7 @@ namespace Website_forum.Models
             email.Body = new TextPart("html") { Text = message.Body };
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.ConnectAsync(host, port, SecureSocketOptions.SslOnConnect);
             await client.AuthenticateAsync(from, pass);
             await client.SendAsync(email);
             await client.DisconnectAsync(true);
