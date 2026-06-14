@@ -93,6 +93,7 @@ namespace Website_forum.Controllers
 
             if (ModelState.IsValid && post.Topic != null)
             {
+                post.PostDate = DateTime.SpecifyKind(post.PostDate, DateTimeKind.Utc);
                 post.Owner = userManager.FindByNameAsync(HttpContext.User.Identity.Name).Result;
                 context.Posts.Add(post);
                 context.SaveChanges();

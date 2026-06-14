@@ -15,10 +15,12 @@ namespace Website_forum.Controllers
     {
         private readonly Microsoft.AspNetCore.Identity.UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
-        public AccountController(Microsoft.AspNetCore.Identity.UserManager<User> userManager, SignInManager<User> signInManager)
+        private readonly EmailService emailService;
+        public AccountController(Microsoft.AspNetCore.Identity.UserManager<User> userManager, SignInManager<User> signInManager, EmailService emailService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.emailService = emailService;
         }
 
         public IActionResult Login(string returnUrl = null)
@@ -37,6 +39,17 @@ namespace Website_forum.Controllers
         {
             if (ModelState.IsValid)
             {
+                var user = await userManager.FindByNameAsync(model.Login);
+                if (user != null)
+                {
+                    // check if email is confirmed
+                    if (!await userManager.IsEmailConfirmedAsync(user))
+                    {
+                        ModelState.AddModelError(string.Empty, "You have not confirmed your email");
+                        return View(model);
+                    }
+                }
+
                 var result = await signInManager.PasswordSignInAsync(model.Login, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
@@ -61,12 +74,20 @@ namespace Website_forum.Controllers
                 var result = await userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // email confirmation disabled - confirm automatically and sign in
                     var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                    await userManager.ConfirmEmailAsync(user, code);
+                    // create confirmation link
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code },
+                               protocol: Request.Scheme);
+                    // send email
+                    await emailService.SendAsync(new EmailMessage
+                    {
+                        Destination = user.Email,
+                        Subject = "Email Confirmation",
+                        Body = "To complete registration, follow this link: <a href=\""
+                        + callbackUrl + "\">complete registration</a>"
+                    });
 
-                    await signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    return Content("To complete registration, check your email and follow the link provided in the message");
                 }
                 else
                 {
