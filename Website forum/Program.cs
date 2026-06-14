@@ -22,7 +22,7 @@ namespace Website_forum
                 var services = scope.ServiceProvider;
                 try
                 {
-                    var identityContext = services.GetRequiredService<IdentityDbContext>();
+                    var identityContext = services.GetRequiredService<Website_forum.Context.IdentityDbContext>();
 
                     identityContext.Database.EnsureCreated();
                 }
