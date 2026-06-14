@@ -10,4 +10,8 @@ Leave comments under posts.
 Ask your questions.
 Create new topics on the forum.
 Edit your comments.
+Delete your comments.
+
 Register via email with confirmation.
+
+website-forum.fly.dev/
