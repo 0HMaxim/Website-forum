@@ -42,6 +42,7 @@ namespace Website_forum
 
             services.AddControllersWithViews();
             services.AddSession();
+            services.AddHttpClient();
             services.AddScoped<EmailService>();
         }
 
