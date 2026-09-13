@@ -1,7 +1,9 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.Extensions.Configuration;
-using MimeKit;
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Website_forum.Models
@@ -16,31 +18,43 @@ namespace Website_forum.Models
     public class EmailService
     {
         private readonly IConfiguration configuration;
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             this.configuration = configuration;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public async Task SendAsync(EmailMessage message)
         {
-            var smtpSection = configuration.GetSection("Smtp");
-            var host = smtpSection["Host"];
-            var port = int.Parse(smtpSection["Port"] ?? "465");
-            var from = smtpSection["User"];
-            var pass = smtpSection["Password"];
+            // Sender must be the email address you verified in Brevo (Senders & IP).
+            var senderEmail = configuration["Smtp:User"];
+            var apiKey = configuration["Brevo:ApiKey"];
 
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse(from));
-            email.To.Add(MailboxAddress.Parse(message.Destination));
-            email.Subject = message.Subject;
-            email.Body = new TextPart("html") { Text = message.Body };
+            var payload = new
+            {
+                sender = new { email = senderEmail },
+                to = new[] { new { email = message.Destination } },
+                subject = message.Subject,
+                htmlContent = message.Body
+            };
 
-            using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.SslOnConnect);
-            await client.AuthenticateAsync(from, pass);
-            await client.SendAsync(email);
-            await client.DisconnectAsync(true);
+            var json = JsonSerializer.Serialize(payload);
+
+            using var client = httpClientFactory.CreateClient();
+            using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.brevo.com/v3/smtp/email");
+            request.Headers.Add("api-key", apiKey);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Brevo send failed ({response.StatusCode}): {errorBody}");
+            }
         }
     }
 }
